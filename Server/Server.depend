@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1650121518 source:c:\users\asus\documents\Системное ПО\server\main.cpp
+	<iostream>
+	<winsock2.h>
+
+1650477635 source:c:\users\asus\documents\Системное ПО\Лабораторная работа №2\server\main.cpp
+	<iostream>
+	<winsock2.h>
+
