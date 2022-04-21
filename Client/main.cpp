@@ -1,6 +1,7 @@
 #include <iostream>
-#pragma comment(lib, "ws2_32.lib") // РґР»СЏ РґРѕСЃС‚СѓРїР° Рє С„СѓРЅРєС†РёСЏРј
-#include <winsock2.h> // Р±РёР±Р»РёРѕС‚РµРєР° РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ СЃРµС‚СЊСЋ
+#pragma comment(lib, "ws2_32.lib") // для доступа к функциям
+#include <winsock2.h> // библиотека для работы с сетью
+#include "../Packet.h"
 
 using namespace std;
 
@@ -9,31 +10,101 @@ int main()
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
 
-    WSAData wsaData;
-    WORD DLLVersion = MAKEWORD(2, 1); // Р·Р°РїСЂР°С€РёРІР°РµРјР°СЏ РІРµСЂСЃРёСЏ Р±РёР±Р»РёРѕС‚РµРєРё WinSock; С‚Р°РєР¶Рµ РЅРµРѕР±С…РѕРґРёРјР° РґР»СЏ Р·Р°РіСЂСѓР·РєРё Р±РёР±Р»РёРѕС‚РµРєРё
-    // Р·Р°РіСЂСѓР·РєР° Р±РёР±Р»РёРѕС‚РµРєРё
-    if (WSAStartup(DLLVersion, &wsaData) != 0) {
-        cout << "РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё Р±РёР±Р»РёРѕС‚РµРєРё." << endl;
-        exit(1);
+    WSADATA wsaData; // инициализируем DLL; создаем сокет
+    WSAStartup(MAKEWORD(2, 2), &wsaData); // инициируем запрос к серверу
+
+    int nSize;
+    // получение данных, возвращаемых сервером
+    char menu;
+    bool running = true;
+    char data[252] = {0};
+    while (running)
+    {
+        char szBuffer[260] = { 0 };
+        SOCKET sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        sockaddr_in sockAddr;
+        memset(&sockAddr, 0, sizeof(sockAddr)); // заполняем байты нулями
+        sockAddr.sin_family = PF_INET;
+        sockAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+        sockAddr.sin_port = htons(1234);
+        connect(sock, (SOCKADDR*)&sockAddr, sizeof(SOCKADDR));
+        system("cls");
+        cout << "[1] Ping" << endl
+             << "[2] Greeting" << endl
+             << "[3] Shutdown" << endl
+             << "[4] Exit"<< endl
+             << "Введите номер функции: ";
+        cin >> menu;
+        switch (menu)
+        {
+            case '1':
+            {
+                char fc = 65;
+                Packet pack(fc, data);
+                send(sock, pack.Serialize(), 260, NULL);
+                system("cls");
+                cout << "Отправлен пакет:\n" << endl;
+                pack.Print();
+                system("pause");
+                system("cls");
+                recv(sock, szBuffer, 260, NULL);
+                pack.Deserialize(szBuffer);
+                char str[252]={0};
+                strcpy(str, pack.Data);
+                cout << "Сообщение от сервера: ";
+                if (strlen(str))
+                    cout << str;
+                else
+                    cout << "Сервер не отвечает.\n";
+                system("pause");
+                break;
+            }
+            case '2':
+            {
+                char fc = 66;
+                Packet pack(fc, data);
+                send(sock, pack.Serialize(), 260, NULL);
+                system("cls");
+                cout << "Отправлен пакет:\n" << endl;
+                pack.Print();
+                system("pause");
+                system("cls");
+                recv(sock, szBuffer, 260, NULL);
+                pack.Deserialize(szBuffer);
+                cout << pack.Data <<endl;
+                char name[30];
+                cin >> name;
+                strcpy(pack.Data, name);
+                send(sock, pack.Serialize(), 260, NULL);
+                recv(sock, szBuffer, 260, NULL);
+                pack.Deserialize(szBuffer);
+                cout << pack.Data << endl;
+                system("pause");
+                break;
+            }
+            case '3':
+            {
+                char fc = 67;
+                Packet pack(fc, data);
+                send(sock, pack.Serialize(), 260, NULL);
+                system("cls");
+                cout << "Отправлен пакет:\n" << endl;
+                pack.Print();
+                system("pause");
+                system("cls");
+                recv(sock, szBuffer, 260, NULL);
+                pack.Deserialize(szBuffer);
+                cout << pack.Data;
+                break;
+            }
+            case'4':
+                running = false;
+                closesocket(sock);
+                break;
+        }
     }
 
-    // РїСЂРѕРІРµСЂРєР° РёРЅС„РѕСЂРјР°С†РёРё РѕР± Р°РґСЂРµСЃРµ СЃРѕРєРµС‚Р°
-    SOCKADDR_IN addr;
-    int sizeofaddr = sizeof(addr);
-    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    addr.sin_port = htons(1111);
-    addr.sin_family = AF_INET;
-
-    SOCKET Connection = socket(AF_INET, SOCK_STREAM, NULL); // СЃРѕРєРµС‚ РґР»СЏ СЃРѕРµРґРёРЅРµРЅРёСЏ СЃ СЃРµСЂРІРµСЂРѕРј
-    if (connect(Connection, (SOCKADDR*)&addr, sizeof(addr)) != 0) { // РїСЂРёСЃРѕРµРґРёРЅРµРЅРёРµ Рє СЃРµСЂРІРµСЂСѓ
-        cout << "РћС€РёР±РєР° РїРѕРґРєР»СЋС‡РµРЅРёСЏ Рє СЃРµСЂРІРµСЂСѓ." << endl;
-        return 1;
-    }
-    cout << "РџРѕРґРєР»СЋС‡РµРЅРёРµ Рє СЃРµСЂРІРµСЂСѓ РїСЂРѕС€Р»Рѕ СѓСЃРїРµС€РЅРѕ!" << endl;
-    char msg[256];
-    // РїСЂРёРЅРёРјР°РµРј Рё Р·Р°РїРёСЃС‹РІР°РµРј РѕС‚РїСЂР°РІР»РµРЅРЅС‹Рµ СЃРµСЂРІРµСЂРѕРј РґР°РЅРЅС‹Рµ
-    recv(Connection, msg, sizeof(msg), NULL);
-    cout << msg << endl;
+    WSACleanup(); // закрываем сокет; прекращаем использование DLL
 
     system("pause");
     return 0;

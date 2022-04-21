@@ -3,7 +3,13 @@
 	<iostream>
 	<winsock2.h>
 
-1650478948 source:c:\users\asus\documents\Системное ПО\Лабораторная работа №2\client\main.cpp
+1650559321 source:c:\users\asus\documents\Системное ПО\Лабораторная работа №2\client\main.cpp
 	<iostream>
 	<winsock2.h>
+	"../Packet.h"
+
+1650559318 c:\users\asus\documents\Системное ПО\Лабораторная работа №2\packet.h
+	<stdlib.h>
+	<Winsock.h>
+	<iostream>
 
